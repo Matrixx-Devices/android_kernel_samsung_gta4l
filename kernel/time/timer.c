@@ -1330,9 +1330,7 @@ int del_timer_sync(struct timer_list *timer)
 EXPORT_SYMBOL(del_timer_sync);
 #endif
 
-static void call_timer_fn(struct timer_list *timer,
-			  void (*fn)(struct timer_list *),
-			  unsigned long baseclk)
+static void call_timer_fn(struct timer_list *timer, void (*fn)(struct timer_list *))
 {
 	int count = preempt_count();
 
@@ -1355,7 +1353,7 @@ static void call_timer_fn(struct timer_list *timer,
 	 */
 	lock_map_acquire(&lockdep_map);
 
-	trace_timer_expire_entry(timer, baseclk);
+	trace_timer_expire_entry(timer);
 	fn(timer);
 	trace_timer_expire_exit(timer);
 
@@ -1376,13 +1374,6 @@ static void call_timer_fn(struct timer_list *timer,
 
 static void expire_timers(struct timer_base *base, struct hlist_head *head)
 {
-	/*
-	 * This value is required only for tracing. base->clk was
-	 * incremented directly before expire_timers was called. But expiry
-	 * is related to the old base->clk value.
-	 */
-	unsigned long baseclk = base->clk - 1;
-
 	while (!hlist_empty(head)) {
 		struct timer_list *timer;
 		void (*fn)(struct timer_list *);
@@ -1396,11 +1387,11 @@ static void expire_timers(struct timer_base *base, struct hlist_head *head)
 
 		if (timer->flags & TIMER_IRQSAFE) {
 			raw_spin_unlock(&base->lock);
-			call_timer_fn(timer, fn, baseclk);
+			call_timer_fn(timer, fn);
 			raw_spin_lock(&base->lock);
 		} else {
 			raw_spin_unlock_irq(&base->lock);
-			call_timer_fn(timer, fn, baseclk);
+			call_timer_fn(timer, fn);
 			raw_spin_lock_irq(&base->lock);
 		}
 	}
