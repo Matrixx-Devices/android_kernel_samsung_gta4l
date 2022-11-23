@@ -182,13 +182,9 @@ extern void add_timer(struct timer_list *timer);
 
 extern int try_to_del_timer_sync(struct timer_list *timer);
 
-<<<<<<< HEAD
 extern struct timer_base timer_base_deferrable;
 
 #ifdef CONFIG_SMP
-=======
-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT_RT)
->>>>>>> adeb6cdf9033 (timers: Prepare support for PREEMPT_RT)
   extern int del_timer_sync(struct timer_list *timer);
 #else
 # define del_timer_sync(t)		del_timer(t)
