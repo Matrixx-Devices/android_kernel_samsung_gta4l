@@ -2976,6 +2976,10 @@ static int lan78xx_stop(struct net_device *net)
 
 	mutex_lock(&dev->dev_mutex);
 
+	netif_dbg(dev, ifup, dev->net, "stop device");
+
+	mutex_lock(&dev->dev_mutex);
+
 	if (timer_pending(&dev->stat_monitor))
 		del_timer_sync(&dev->stat_monitor);
 
